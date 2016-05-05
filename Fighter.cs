@@ -36,7 +36,7 @@ public class Fighter : MonoBehaviour {
         }
         if (inAction)
         {
-            if (attackMethod(0, 1, KeyCode.W))
+            if (attackMethod(0, 1, KeyCode.W, null, 0, true))
             {
 
             }
@@ -48,17 +48,30 @@ public class Fighter : MonoBehaviour {
         deadMethod();
     }
 
-    public bool attackMethod(int stunSeconds, double scaleDamage, KeyCode key)
+    public bool attackMethod(int stunSeconds, double scaleDamage, KeyCode key, GameObject particleEffect, int projectile, bool opponentBased)
     {
-        if (Input.GetKey(key) && inRange())
+        if (opponentBased)
         {
-            GetComponent<Animation>().Play(attack.name);
-            ClickToMove.attack = true;
-            if (opponent != null)
+            if (Input.GetKey(key) && inRange())
             {
-                transform.LookAt(opponent.transform.position);
+                GetComponent<Animation>().Play(attack.name);
+                ClickToMove.attack = true;
+                if (opponent != null)
+                {
+                    transform.LookAt(opponent.transform.position);
+                }
+            }
+            else
+            {
+                if (Input.GetKey(key))
+                {
+                    GetComponent<Animation>().Play(attack.name);
+                    ClickToMove.attack = true;
+                    transform.LookAt(ClickToMove.cursorPosition);
+                }
             }
         }
+
         if (GetComponent<Animation>()[attack.name].time > 0.9 * GetComponent<Animation>()[attack.name].length)
         {
             ClickToMove.attack = false;
@@ -69,7 +82,7 @@ public class Fighter : MonoBehaviour {
             }
             return false;
         }
-        impact(stunSeconds, scaleDamage);
+        impact(stunSeconds, scaleDamage, particleEffect, projectile, opponentBased);
         return true;
     }
 
@@ -77,22 +90,32 @@ public class Fighter : MonoBehaviour {
     {
         ClickToMove.attack = false;
         impacted = false;
-        //GetComponent<Animation>().Stop(attack.name);
+        GetComponent<Animation>().Stop(attack.name);
     }
 
     //method agar kalkulasi penyerangan player teratur bukan per frame.
-    void impact(int stunSeconds, double scaleDamage)
+    void impact(int stunSeconds, double scaleDamage, GameObject particleEffect, int projectile, bool opponentBased)
     {
-        if(opponent!=null&&GetComponent<Animation>().IsPlaying(attack.name)&&!impacted)
+        if((!opponentBased || opponent!=null)&&GetComponent<Animation>().IsPlaying(attack.name)&&!impacted)
         {
 			if ((GetComponent<Animation>()[attack.name].time) > impactLength&&(GetComponent<Animation>()[attack.name].time<0.9* GetComponent<Animation>()[attack.name].length))
             {
                 counter = combatEscapeTime + 2;
                 CancelInvoke("combatEscCountDown");
                 InvokeRepeating("combatEscCountDown", 0, 1);
-                opponent.GetComponent<Enemy>().getHit(damage*scaleDamage);
+                opponent.GetComponent<Enemy>().getHit(damage * scaleDamage);
                 opponent.GetComponent<Enemy>().getStun(stunSeconds);
-                impacted = true;
+                Quaternion rot = transform.rotation;
+                rot.x = 0f;
+                rot.z = 0f;
+                if (projectile > 0)
+                {
+                    Instantiate(Resources.Load("Projectile"), new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z), rot);
+                }
+                if (particleEffect != null) {
+                    Instantiate(particleEffect, new Vector3(opponent.transform.position.x, opponent.transform.position.y, opponent.transform.position.z), Quaternion.identity);
+                }
+                impacted = true;    
             }
        }
     }
@@ -117,7 +140,7 @@ public class Fighter : MonoBehaviour {
 
     //method agar health enemy berkurang pada saat diserang jarak dekat saja
     bool inRange(){
-		if (Vector3.Distance (opponent.transform.position, transform.position) <= range) {
+		if (opponent != null && Vector3.Distance (opponent.transform.position, transform.position) <= range) {
 			return true;	
 		} else {
 			return false;

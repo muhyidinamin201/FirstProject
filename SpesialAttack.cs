@@ -4,10 +4,15 @@ using System.Collections;
 public class SpesialAttack : MonoBehaviour {
 
     public Fighter player;
+    public Texture2D picture;
     public KeyCode key;
     public double damagePercentage;
     public int stunTime;
     public bool inAction;
+    public GameObject particleEffect;
+    public int projectile;
+    public bool opponentBased;
+    public bool activated = true; 
 
 	// Use this for initialization
 	void Start () {
@@ -17,7 +22,7 @@ public class SpesialAttack : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(key) && !player.spesialAttack)
+        if (activated && Input.GetKeyDown(key) && !player.spesialAttack)
         {
             player.resetAttack();
             player.spesialAttack = true;
@@ -25,7 +30,7 @@ public class SpesialAttack : MonoBehaviour {
         }
         if (inAction && player.spesialAttack)
         {
-            if(player.attackMethod(stunTime, damagePercentage, key))
+            if(player.attackMethod(stunTime, damagePercentage, key, particleEffect, projectile, opponentBased))
             {
 
             }

@@ -74,7 +74,7 @@ public class Enemy : MonoBehaviour {
     //method agar enemy bisa bergerak sampai pada jarak tertentu sesuai settingan
     bool inRange()
     {
-        if (Vector3.Distance(transform.position, player.position) < range)
+        if (Vector3.Distance(transform.position, player.transform.position) < range)
         {
             return true;
         }
@@ -92,7 +92,6 @@ public class Enemy : MonoBehaviour {
         {
             health = 0;
         }
-        Debug.Log(health);
     }
 
     public void getStun(int seconds)
